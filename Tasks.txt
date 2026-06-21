@@ -1,0 +1,23 @@
+1) Implement the L estimator. 
+Implement Barzilai-Borwein (BB) and Adaptive Gradient Descent without Descent (AdGD)
+
+2) Implement Polyak descent / Stochastic Polyak step
+For this set f* = optimal (compute this before). f* = 0, and f* = larger/smaller than optimal
+
+3) Implement D-Adaptation which estimates distance D from f*
+
+4) Implement DecSPS and SPS moving target of f*
+
+Goal: To see whether these methods work at all
+Compare to Adam/SGD
+
+- Create this circuit: Rx, Ry then linear CNOT gates (for each layer)
+- Use objective function: H = - sum(Z_i Z_{i+1}) - sum(X_i)
+    - Also use H2 hamiltonian (if your experiments finish)
+- Start with say 2 qubits 2 layers and scale to as many qubtis / layers as you can
+- Compare with adam and sgd and qng
+
+Notes:
+Results are not supposed to be better. Ideally they should be worse
+Our goal is to see if they work or not and then next week we will look into how we can make them better
+We use PENNYLANE exclusivly. DO NOT use Qiskit. 
