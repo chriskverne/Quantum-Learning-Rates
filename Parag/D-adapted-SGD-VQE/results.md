@@ -1,0 +1,16 @@
+# Results for VQE optimization with D-adapted SGD
+## TL;DR: D adaptation in SGD seems to work better with higher dimensionalities more consistently with many optmization steps
+![](./figs/2q2l.png)
+![](./figs/2q3l.png)
+![](./figs/2q4l.png)
+![](./figs/2q5l.png)
+![](./figs/3q2l.png)
+![](./figs/3q3l.png)
+![](./figs/3q4l.png)
+![](./figs/3q5l.png)
+![](./figs/4q2l.png)
+![](./figs/4q3l.png)
+![](./figs/4q4l.png)
+![](./figs/5q5l.png)
+![](./figs/5q4l.png)
+![](./figs/5q5l.png)
