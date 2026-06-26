@@ -1,0 +1,17 @@
+# Block the virtual environment inside Aryan
+Aryan/myenv/
+
+# Block Python caching across the whole repo
+**/__pycache__/
+**/*.py[cod]
+
+# Block temporary data files
+**/results.json
+
+# System specific files
+.vscode/
+.idea/
+.DS_Store
+
+DecSPS.pdf
+SPS.pdf
