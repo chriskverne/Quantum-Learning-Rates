@@ -1,6 +1,9 @@
 import pennylane as qml
 import pennylane.numpy as np
 
+# comapre to sgd with idk step size of 0.01 or adam with sgtep size 0.01 or qng
+# test it on QAOA, VQE (different hamiltonians) and 2-15 qubit
+
 # 1. Hyperparameters
 num_qubits = 8
 num_layers = 3
