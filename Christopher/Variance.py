@@ -84,3 +84,6 @@ for i in range(max_iterations):
 
 print("\nOptimization Complete.")
 print(f"Final Estimated Ground State Energy: {energy:.6f}")
+
+#estimate delta
+#temple v.s. weinstein
