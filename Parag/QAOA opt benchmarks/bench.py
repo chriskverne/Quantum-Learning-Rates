@@ -5,7 +5,7 @@ import numpy as std_np
 import json
 import networkx as nx
 
-configs = [(4, 2), (6, 4), (8, 4), (10, 5), (12, 6), (14, 7)]
+configs = [(4, 4), (6, 6), (8, 6), (10, 9), (12, 10), (14, 11)]
 
 for q, l in configs:
     num_qubits = q
