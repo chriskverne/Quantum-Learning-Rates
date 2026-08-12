@@ -15,7 +15,7 @@ for q, l in configs:
     dev = qml.device("lightning.qubit", wires=num_qubits)
 
     # Define the MaxCut problem properly
-    nx_graph = nx.random_regular_graph(d=3, n=num_qubits, seed=42)
+    nx_graph = nx.cycle_graph(num_qubits)
     graph = list(nx_graph.edges())  
 
     coeffs = []
@@ -226,7 +226,7 @@ for q, l in configs:
         results["polyak_qng"][f"best_loss{i}"] = [float(c) for c in all_best_qng[r]]
         results["polyak_qng"][f"weinstein_vs_constant{i}"] = all_switch_qng[r]
 
-    save_path = f"./results/{num_qubits}q_{num_layers}l.json"
+    save_path = f"./results/cycle/{num_qubits}q_{num_layers}l.json"
     with open(save_path, "w") as f:
         json.dump(results, f)
 
@@ -263,4 +263,4 @@ for q, l in configs:
 
     plt.grid(True, linewidth=2.5)
     plt.tight_layout() # Ensures the legend doesn't get cut off
-    plt.savefig(f'./results/{num_qubits}q_{num_layers}l.png', bbox_inches='tight', dpi=600)
+    plt.savefig(f'./results/cycle/{num_qubits}q_{num_layers}l.png', bbox_inches='tight', dpi=600)
