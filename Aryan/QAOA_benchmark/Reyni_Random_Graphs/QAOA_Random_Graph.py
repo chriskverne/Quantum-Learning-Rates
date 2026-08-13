@@ -407,9 +407,7 @@ def run_erdos_renyi_mis_benchmark(num_qubits, num_layers, p_edge=0.5, penalty=2.
 # 4. Main Execution Loop Across Scale Configurations
 if __name__ == "__main__":
     benchmark_configs = [
-        (14,10),
-        (12, 8),
-        (8, 4)  # High-depth scale configuration target
+        (4, 2)  # High-depth scale configuration target
     ]
 
     for qubits, layers in benchmark_configs:
