@@ -1,6 +1,7 @@
 import pennylane as qml
 from pennylane import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 # IMPORT YOUR CUSTOM OPTIMIZERS HERE
 from decsps_opt import DecSPS
@@ -8,8 +9,8 @@ from sgd_opt import VanillaSGD
 
 
 # 1. Environment Setup
-num_qubits = 4
-num_layers = 3
+num_qubits = 6
+num_layers = 4
 safe_l_star = float(1 - 2 * num_qubits)
 dev = qml.device("default.qubit", wires=num_qubits)
 
@@ -118,6 +119,15 @@ plt.ylabel("Energy Expectation Value <H>", fontsize=12)
 plt.grid(True, linestyle=':', alpha=0.6)
 plt.legend(fontsize=11)
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+results_dir = os.path.join(script_dir, "results")
+
 # Display the window containing the generated figure
 plt.tight_layout()
+filename = f"{num_qubits}q_{num_layers}l.png"
+output_filename = os.path.join(results_dir, filename)
+
+# Save it using the dynamic filename
+plt.savefig(filename, dpi=300, facecolor='white')
 plt.show()
