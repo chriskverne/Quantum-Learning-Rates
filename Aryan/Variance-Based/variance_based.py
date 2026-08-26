@@ -39,7 +39,7 @@ def run_variance_based(params_init, num_qubits, steps, expval_qnode, expval_sq_q
         
         # eta = sqrt(Var(H)) / ||grad||^2
         if grad_norm_sq > 1e-8:
-            eta = np.sqrt(variance) / grad_norm_sq
+            eta = np.sqrt(variance) / grad_norm_sqo
         else:
             eta = 1e-3  # Soft fallback
             
