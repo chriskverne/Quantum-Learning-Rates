@@ -5,20 +5,20 @@ configs = ["4q_2l", "6q_3l", "8q_4l", "10q_5l", "12q_6l", "14q_7l"]
 
 """
 TFIM_ISING
-4q: −4.75877048
-6q: −7.29622981
-8q: −9.83795145
-10q: −12.38149000
-12q: −14.92597111
-14q: −17.47100405
+4q: -4.75877048
+6q: -7.29622981
+8q: -9.83795145
+10q: -12.38149000
+12q: -14.92597111
+14q: -17.47100405
 
 XY
-−4.47213595
-−6.98791841
-−9.51754097
-−12.05334837
-−14.59245962
-−17.13354447
+-4.47213595
+-6.98791841
+-9.51754097
+-12.05334837
+-14.59245962
+-17.13354447
 """
 
 # with open(example, "r") as f:
@@ -26,19 +26,23 @@ XY
 
 # # Top-level keys only
 # print(list(data.keys()))
-
 import json
 import os
 import numpy as np
-import pandas as pd
 
 # 1. Verify this path matches your directory exactly
-base_dir = "./VQE/H2"
+base_dir = "./VQE/XY"
 configs = ["4q_2l", "6q_3l", "8q_4l", "10q_5l", "12q_6l", "14q_7l"]
 n_steps = 50
 n_runs = 5
 
+# Define the exact learning rates we expect to find for the baselines
+lrs = ["0.001", "0.01", "0.1", "0.5"]
+
 def compute_metrics(runs_matrix, e_min):
+    if runs_matrix is None or len(runs_matrix) == 0:
+        return "-", "-", "-"
+
     best_runs = np.minimum.accumulate(runs_matrix, axis=1)
 
     # 1. Final Energy
@@ -61,17 +65,38 @@ def compute_metrics(runs_matrix, e_min):
     # 3. Regret AUC
     auc_runs = np.sum(best_runs - e_min, axis=1)
 
-    return {
-        "Final Energy": f"${mean_final:.3f} \\pm {std_final:.2f}$",
-        "Steps to 95\\%": f"${np.mean(steps):.1f} \\pm {np.std(steps):.1f}$",
-        "Regret AUC": f"${np.mean(auc_runs):.1f} \\pm {np.std(auc_runs):.1f}$",
-    }
+    # Note the specific order required: AUC, Energy, Steps
+    auc_str = f"${np.mean(auc_runs):.1f} \\pm {np.std(auc_runs):.1f}$"
+    eng_str = f"${mean_final:.3f} \\pm {std_final:.2f}$"
+    step_str = f"${np.mean(steps):.1f} \\pm {np.std(steps):.1f}$"
 
-# Dictionary to hold the pivoted data
-# Format: table_data[metric][optimizer][config_header] = value
-metrics_list = ["Final Energy", "Steps to 95\\%", "Regret AUC"]
-table_data = {m: {} for m in metrics_list}
-config_headers = []
+    return auc_str, eng_str, step_str
+
+def extract_runs(data, key1, key2=None):
+    try:
+        if key2 is None:
+            runs = [data[key1][f"loss{i}"] for i in range(1, n_runs + 1)]
+        else:
+            runs = [data[key1][key2][f"loss{i}"] for i in range(1, n_runs + 1)]
+        return np.array(runs)
+    except (KeyError, TypeError):
+        return None
+
+# =======================================================
+# Build the LaTeX string
+# =======================================================
+latex_lines = [
+    "\\begin{table}[htpb]",
+    "\\centering",
+    "\\footnotesize",
+    "\\setlength{\\tabcolsep}{3pt} % Compress spacing slightly to fit 15 columns",
+    "\\resizebox{\\textwidth}{!}{%",
+    "\\begin{tabular}{l cc cccc cccc cccc}",
+    "\\toprule",
+    " & \\multicolumn{2}{c}{\\textbf{Polyak}} & \\multicolumn{4}{c}{\\textbf{SGD}} & \\multicolumn{4}{c}{\\textbf{ADAM}} & \\multicolumn{4}{c}{\\textbf{QNG}} \\\\",
+    "\\cmidrule(lr){2-3} \\cmidrule(lr){4-7} \\cmidrule(lr){8-11} \\cmidrule(lr){12-15}",
+    "\\textbf{Metric} & GD & QNG & 0.001 & 0.01 & 0.1 & 0.5 & 0.001 & 0.01 & 0.1 & 0.5 & 0.001 & 0.01 & 0.1 & 0.5 \\\\"
+]
 
 for cfg in configs:
     json_path = os.path.join(base_dir, f"{cfg}.json")
@@ -89,78 +114,47 @@ for cfg in configs:
     num_layers = data.get("num_layers", "N/A")
     e_min = float(data["gse"])
     
-    # Create a nice multi-line LaTeX header for this column using \makecell
-    header = f"\\makecell{{\\textbf{{{num_qubits}Q, {num_layers}L}} \\\\ GSE=${e_min:.3f}$}}"
-    config_headers.append(header)
+    # Span row for configuration
+    latex_lines.append("\\midrule")
+    latex_lines.append(f"\\multicolumn{{15}}{{l}}{{\\textbf{{{num_qubits} Qubits, {num_layers} Layers \\quad (GSE = ${e_min:.3f}$)}}}} \\\\")
+    latex_lines.append("\\midrule")
 
-    runs_dict = {}
+    # Arrays to hold the row data
+    row_auc = ["Regret AUC"]
+    row_eng = ["Final Energy"]
+    row_step = ["Steps to 95\\%"]
 
     # 1. Polyak methods
-    for opt_key, label in [("polyak_gd", "Polyak GD"), ("polyak_qng", "Polyak QNG")]:
-        if opt_key in data:
-            runs_dict[label] = np.array([data[opt_key][f"loss{i}"] for i in range(1, n_runs + 1)])
+    for key in ["polyak_gd", "polyak_qng"]:
+        runs = extract_runs(data, key)
+        auc, eng, step = compute_metrics(runs, e_min)
+        row_auc.append(auc)
+        row_eng.append(eng)
+        row_step.append(step)
 
-    # 2. Baseline optimizers
+    # 2. Baseline optimizers (SGD, ADAM, QNG)
     for opt in ["sgd", "adam", "qng"]:
-        if opt in data:
-            for lr_key in sorted(data[opt].keys(), key=lambda k: float(k.replace("lr_", ""))):
-                lr_val = lr_key.replace("lr_", "")
-                label = f"{opt.upper()} (lr={lr_val})"
-                runs_dict[label] = np.array([data[opt][lr_key][f"loss{i}"] for i in range(1, n_runs + 1)])
+        for lr in lrs:
+            runs = extract_runs(data, opt, f"lr_{lr}")
+            auc, eng, step = compute_metrics(runs, e_min)
+            row_auc.append(auc)
+            row_eng.append(eng)
+            row_step.append(step)
 
-    # Compute and store
-    for opt_name, runs in runs_dict.items():
-        res = compute_metrics(runs, e_min)
-        for m in metrics_list:
-            if opt_name not in table_data[m]:
-                table_data[m][opt_name] = {}
-            table_data[m][opt_name][header] = res[m]
+    # Join and append to table
+    latex_lines.append(" & ".join(row_auc) + " \\\\")
+    latex_lines.append(" & ".join(row_eng) + " \\\\")
+    latex_lines.append(" & ".join(row_step) + " \\\\")
 
-# --- Custom LaTeX Table Generator ---
-def generate_latex_table(metric_name, data_dict, columns):
-    df = pd.DataFrame.from_dict(data_dict, orient='index')
-    # Filter only available columns and set order
-    cols_present = [c for c in columns if c in df.columns]
-    df = df[cols_present]
-    df.index.name = 'Optimizer'
-    df.reset_index(inplace=True)
+# Finish table
+latex_lines.extend([
+    "\\bottomrule",
+    "\\end{tabular}%",
+    "}",
+    "\\caption{VQE Optimization Benchmark Results.}",
+    "\\label{tab:vqe_benchmark_wide}",
+    "\\end{table}"
+])
 
-    col_format = "l" + "c" * (len(cols_present))
-    
-    lines = []
-    lines.append("\\begin{table}[htpb]")
-    lines.append("\\centering")
-    # \resizebox ensures the table fits horizontally on the page
-    lines.append("\\resizebox{\\textwidth}{!}{%") 
-    lines.append(f"\\begin{{tabular}}{{{col_format}}}")
-    lines.append("\\toprule")
-    
-    # Headers
-    head_str = " & ".join([f"\\textbf{{{c}}}" if c == 'Optimizer' else c for c in df.columns])
-    lines.append(head_str + " \\\\")
-    lines.append("\\midrule")
-    
-    # Rows
-    for _, row in df.iterrows():
-        # Replace missing data with a hyphen if an optimizer didn't run for a specific config
-        row_vals = [str(row[c]) if pd.notna(row[c]) else "-" for c in df.columns]
-        lines.append(" & ".join(row_vals) + " \\\\")
-        
-    lines.append("\\bottomrule")
-    lines.append("\\end{tabular}%")
-    lines.append("}")
-    lines.append(f"\\caption{{VQE Benchmark Results: \\textbf{{{metric_name}}}}}")
-    
-    # Clean label name
-    clean_label = metric_name.lower().replace(" ", "_").replace("\\", "").replace("%", "")
-    lines.append(f"\\label{{tab:vqe_{clean_label}}}")
-    lines.append("\\end{table}\n")
-    
-    return "\n".join(lines)
-
-# Print the final tables
-for metric in metrics_list:
-    print(f"% {'='*50}")
-    print(f"% Table for {metric}")
-    print(f"% {'='*50}\n")
-    print(generate_latex_table(metric, table_data[metric], config_headers))
+# Print final result
+print("\n".join(latex_lines))
