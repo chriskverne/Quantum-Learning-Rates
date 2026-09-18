@@ -83,7 +83,6 @@ class gCANSOptimizer:
             self.xi_prime = np.zeros(d)
             
         if self.s_tot >= self.N:
-            print(f"Total shot budget {self.N} reached.")
             return theta
 
         # Evaluate gradient and variances

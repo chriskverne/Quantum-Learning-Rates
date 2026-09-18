@@ -10,7 +10,7 @@ from iCANSOptimizer import iCANSOptimizer
 from gCANSOptimizer import gCANSOptimizer
 
 
-configs = [(4, 2)]#, (6, 4), (8, 4), (10, 5), (12, 6), (14, 7), (4, 4), (6, 6), (8, 6), (10, 9), (12, 10), (14, 11)]
+configs = [(4, 2), (4, 4), (6, 4), (6, 6), (8, 4), (8, 6), (10, 5), (10, 9), (12, 6), (12, 10), (14, 7), (14, 11)]
 
 for q, l in configs:
     num_qubits = q
@@ -19,10 +19,13 @@ for q, l in configs:
     n_steps = 50
     dev = qml.device("lightning.qubit", wires=num_qubits)
 
-    # Define the MaxCut problem properly
-    nx_graph = nx.cycle_graph(num_qubits)
-    graph = list(nx_graph.edges())
+    # # Use a cycle graph for the MaxCut problem
+    # nx_graph = nx.cycle_graph(num_qubits)
+    # graph = list(nx_graph.edges())
 
+    # Use a random regular graph for the MaxCut problem
+    nx_graph = nx.random_regular_graph(d=3, n=num_qubits, seed=42)
+    graph = list(nx_graph.edges())
     coeffs = []
     observables = []
     for i, j in graph:
@@ -77,6 +80,10 @@ for q, l in configs:
     all_ican = {lr: [] for lr in ican_lrs}
     all_gcan = {lr: [] for lr in gcan_lrs}
 
+    # Estimate L for kown eigenspectrum
+    L_est = delta / 2.0
+    # print(f"Estimated L: {L_est}, Ground State Energy: {eigvals[0]}, Gap: {delta}")
+
     for _ in range(5):
         # QAOA parameters are a 1D array of size 2 * num_layers
         params = np.random.uniform(0, np.pi, size=2 * num_layers)
@@ -96,7 +103,7 @@ for q, l in configs:
         for lr in ican_lrs:
             ican_params = initial_params.copy()
             ican_costs = []
-            ican_opt = iCANSOptimizer(step=lr)
+            ican_opt = iCANSOptimizer(step=lr, L=L_est)
             for step in range(n_steps):
                 ican_cost = cost_fn(ican_params)
                 ican_costs.append(ican_cost)
@@ -106,7 +113,7 @@ for q, l in configs:
         for lr in gcan_lrs:
             gcan_params = initial_params.copy()
             gcan_costs = []
-            gcan_opt = gCANSOptimizer(step=lr)
+            gcan_opt = gCANSOptimizer(step=lr, L=L_est)
             for step in range(n_steps):
                 gcan_cost = cost_fn(gcan_params)
                 gcan_costs.append(gcan_cost)
@@ -129,7 +136,7 @@ for q, l in configs:
                 d[f"loss{i}"] = [float(c) for c in data[lr][r]]
             results[name][f"lr_{lr}"] = d
 
-    save_path = f"./results/cycle_CAN/{num_qubits}q_{num_layers}l.json"
+    save_path = f"./results/random_CAN/{num_qubits}q_{num_layers}l.json"
     with open(save_path, "w") as f:
         json.dump(results, f)
 
@@ -156,5 +163,5 @@ for q, l in configs:
 
     plt.grid(True, linewidth=2.5)
     plt.tight_layout() # Ensures the legend doesn't get cut off
-    plt.savefig(f'./results/cycle_CAN/{num_qubits}q_{num_layers}l.png', bbox_inches='tight', dpi=600)
+    plt.savefig(f'./results/random_CAN/{num_qubits}q_{num_layers}l.png', bbox_inches='tight', dpi=600)
     plt.close() # Avoid accumulating figures across the 12 configs
