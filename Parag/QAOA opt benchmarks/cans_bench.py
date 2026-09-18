@@ -7,18 +7,7 @@ import networkx as nx
 
 
 from iCANSOptimizer import iCANSOptimizer
-
-class GCAN:
-    """GCAN optimizer -- implementation intentionally left blank."""
-
-    def __init__(self, stepsize=0.01):
-        self.stepsize = stepsize
-
-    def step(self, cost_fn, params):
-        # TODO: implement the GCAN update rule here
-        # (placeholder returns params unchanged so the pipeline still runs)
-        return params
-###########################################################################
+from gCANSOptimizer import gCANSOptimizer
 
 
 configs = [(4, 2)]#, (6, 4), (8, 4), (10, 5), (12, 6), (14, 7), (4, 4), (6, 6), (8, 6), (10, 9), (12, 10), (14, 11)]
@@ -114,15 +103,15 @@ for q, l in configs:
                 ican_params = ican_opt.step(cost_fn, ican_params)
             all_ican[lr].append([float(c[0]) for c in ican_costs])
 
-        # for lr in gcan_lrs:
-        #     gcan_params = initial_params.copy()
-        #     gcan_costs = []
-        #     gcan_opt = GCAN(stepsize=lr)
-        #     for step in range(n_steps):
-        #         gcan_cost = cost_fn(gcan_params)
-        #         gcan_costs.append(gcan_cost)
-        #         gcan_params = gcan_opt.step(cost_fn, gcan_params)
-        #     all_gcan[lr].append([float(c) for c in gcan_costs])
+        for lr in gcan_lrs:
+            gcan_params = initial_params.copy()
+            gcan_costs = []
+            gcan_opt = gCANSOptimizer(step=lr)
+            for step in range(n_steps):
+                gcan_cost = cost_fn(gcan_params)
+                gcan_costs.append(gcan_cost)
+                gcan_params = gcan_opt.step(cost_fn, gcan_params)
+            all_gcan[lr].append([float(c[0]) for c in gcan_costs])
 
 
     ican_curves = {lr: std_np.mean(all_ican[lr], axis=0) for lr in ican_lrs}
@@ -131,7 +120,7 @@ for q, l in configs:
     x = list(range(1, n_steps + 1))
     results = {"num_qubits": int(num_qubits), "num_layers": int(num_layers),
             "polyak_gd": {}, "polyak_qng": {}, "ican": {}, "gcan": {}}
-    for name, lrs, data in [("ican", ican_lrs, all_ican)]:#, ("gcan", gcan_lrs, all_gcan)]:
+    for name, lrs, data in [("ican", ican_lrs, all_ican), ("gcan", gcan_lrs, all_gcan)]:
         for lr in lrs:
             d = {}
             for r in range(5):
