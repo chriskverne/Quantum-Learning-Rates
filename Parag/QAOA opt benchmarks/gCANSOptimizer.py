@@ -47,7 +47,7 @@ class gCANSOptimizer:
             theta_plus[i] += np.pi / 2
             
             # Execute exactly (shots=None bypasses the VarianceMP limitation)
-            exact_expval_plus, exact_var_plus = qnode(theta_plus, shots=None)
+            exact_expval_plus, exact_var_plus = qnode(theta_plus)#, shots=None)
             
             # Classically simulate the finite-shot expectation value
             expval_plus = np.random.normal(exact_expval_plus, np.sqrt(exact_var_plus / s_i))
@@ -57,7 +57,7 @@ class gCANSOptimizer:
             theta_minus[i] -= np.pi / 2
             
             # Execute exactly
-            exact_expval_minus, exact_var_minus = qnode(theta_minus, shots=None)
+            exact_expval_minus, exact_var_minus = qnode(theta_minus)#, shots=None)
             
             # Classically simulate the finite-shot expectation value
             expval_minus = np.random.normal(exact_expval_minus, np.sqrt(exact_var_minus / s_i))
