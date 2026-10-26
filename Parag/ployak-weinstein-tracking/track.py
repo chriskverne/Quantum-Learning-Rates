@@ -6,11 +6,9 @@ import numpy as std_np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 
-# 1. Setup Results Directory
 results_dir = "./results"
 os.makedirs(results_dir, exist_ok=True)
 
-# 2. System & Hamiltonian Configuration
 num_qubits = 6
 h_field = 1.0
 
@@ -36,7 +34,7 @@ H2_obs = qml.Hermitian(H2_mat, wires=range(num_qubits))
 
 print(f"Exact Ground State Energy (lambda_0): {lambda_0:.6f}")
 
-# 3. Circuit Factory
+# Circuit
 dev = qml.device("default.qubit", wires=num_qubits)
 
 def create_qnodes(num_layers):
@@ -89,7 +87,7 @@ def find_ansatz_e_star(energy_qnode, num_layers, lambda_0, num_restarts=3):
     return max(best_e, lambda_0)
 
 
-# 4. Run Layer Ablation Experiment
+# Run Layer Ablation Experiment
 layer_ablation_list = [2, 4, 6, 8, 10]
 num_steps = 400
 lr = 0.01
@@ -215,14 +213,14 @@ for num_layers in layer_ablation_list:
     plt.close(fig)
 
 
-# 5. Save JSON Results
+# Save JSON Results
 json_path = os.path.join(results_dir, "vqe_polyak_weinstein_results.json")
 with open(json_path, "w") as f:
     json.dump(all_results, f, indent=4)
 print(f"\nSaved complete JSON data to {json_path}")
 
 
-# 6. Combined Layer Ablation Comparison Plots
+# Combined Layer Ablation Comparison Plots
 fig, axes = plt.subplots(2, 2, figsize=(15, 11))
 steps_axis = range(num_steps)
 
