@@ -15,3 +15,10 @@ Aryan/myenv/
 
 DecSPS.pdf
 SPS.pdf
+
+
+/CLAUDE.md
+lenish/*.md
+lenish/*.png
+lenish/*.py
+**/.ipynb_checkpoints/

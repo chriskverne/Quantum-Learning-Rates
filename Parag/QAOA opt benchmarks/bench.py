@@ -5,7 +5,7 @@ import numpy as std_np
 import json
 import networkx as nx
 
-configs = [(4, 4), (6, 6), (8, 6), (10, 9), (12, 10), (14, 11)]
+configs = [(4, 2), (6, 4), (8, 6), (10, 8), (12, 10), (14, 10)]
 
 for q, l in configs:
     num_qubits = q
@@ -206,7 +206,7 @@ for q, l in configs:
 
     x = list(range(1, n_steps + 1))
     results = {"num_qubits": int(num_qubits), "num_layers": int(num_layers),
-            "polyak_gd": {}, "polyak_qng": {}, "sgd": {}, "adam": {}, "qng": {}}
+            "polyak_gd": {}, "polyak_qng": {}, "sgd": {}, "adam": {}, "qng": {}, "gse":float(eigvals[0])}
     for name, lrs, data in [("sgd", sgd_lrs, all_sgd), ("adam", adam_lrs, all_adam), ("qng", qng_lrs, all_qng)]:
         for lr in lrs:
             d = {}
